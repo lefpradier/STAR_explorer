@@ -1,0 +1,58 @@
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STAR explorer</title>
+  <link rel="stylesheet" href="assets/style.css">
+
+</head>
+
+<body> 
+
+<h1 id="-star-explorer-https-github-com-lefpradier-star_explorer-" class="h1 article-title"><a href="https://github.com/lefpradier/STAR_explorer">STAR explorer</a></h1>
+<p><span class="tab">
+&emsp;Ce repository contient le code pour entraîner et déployer un modèle de prédiction de la fréquentation des transports en commun de l'agglomération de Rennes (Bretagne, France). Il a été réalisé dans le cadre du projet 10 de la formation <i>Ingénieur IA</i> de l'organisme OpenClassrooms.</span><br><!-- Le modèle développé permet de prédire la demande en chaque point du réseau de Rennes Métropole en fonction de la demande connue aux pas de temps passés.</br>  
+Ce modèle peut être utilisé : --></p>
+<!-- - pour prédire la demande dans l’heure qui vient
+- pour tester l’effet d’une coupure de réseau sur la demande dans l’heure qui vient.
+</span>    -->
+<h2 id="motivation" class="h2 article-title">Motivation</h2>
+<!-- A REPRENDRE --> 
+<p><span class="tab">&emsp;Comment faire pour diminuer la saturation en passagers d’un réseau de transports en commun en cas de perturbation du service ?
+Pour ce faire, il faudrait idéalement être capable de simuler des tests de perturbation du réseau : soit quantitativement en perturbant la fréquence des transports, soit topologiquement en perturbant le tracé des lignes. Ainsi, on serait capable d’évaluer l’effet de chaque perturbation sur la fréquentation. Mais pour pouvoir réaliser ces simulations, il est nécessaire de disposer d’un modèle capable de prédire la demande sur un réseau de transports en commun.</span>  </p>
+<h2 id="jeu-de-donn-es" class="h2 article-title">Jeu de données</h2>
+<p><span class="tab">
+&emsp;Pour mener à bien le projet, plusieurs jeux de données ont été récupérés.
+</span></p> 
+<ul class="goodlist">  
+<li>Un jeu de données fourni par la <a href="https://data.explore.star.fr/">Société de Transports en commun de l'Agglomération de Rennes</a>. Il contient des données de fréquentation détaillées par station et par tranches de 15 minutes sur l'année 2022-2023, ainsi que le parcours des lignes de métro et de bus de la métropole.</li>
+<li>Un jeu de données a été collecté depuis le site <a href="https://statistiques-locales.insee.fr/">Statistiques locales de l’INSEE</a> contenant un ensemble de 11 statistiques locales au carreau de 1 km de la métropole de Rennes. </li>
+<li>Un jeu de données regroupant des <strong>variables fonctionnelles</strong> associées à la <a href="https://data.rennesmetropole.fr/">métropole de Rennes</a> (parkings, écoles primaires, commerces).</li>
+</ul>
+<p><span class="tab">&emsp;Les données spatiales ont été découpées en carreaux de 500 mètres de côté, et ont été utilisées afin de reconstruire quatre graphes de dépendance spatiale :</span>  </p>
+<ul class="goodlist">
+<li>un graphe de proximité géographique</li>
+<li>un graphe de connectivité des transports en commun</li>
+<li>un graphe de similarité démographique et fiscale (similarité entre les variables de l'INSEE)</li>
+<li>un graphe de similarité fonctionnelle (entre les différents équipements présents sur la métropole)<!--A l’issue du processus de récupération, les données spatiales ont été passées sous forme de  coordonnées de latitudes et de longitudes. Elles ont ensuite été replacées dans la grille spatiale préalablement définie par l'INSEE (projection de type EPSG3035). Ce grille a également servie de repère à toutes les autres variables.--> 
+</li>
+</ul>
+<p><img src="assets/p10data-1.png" alt="alt text" width="70%" height="auto"></p>
+<h2 id="type-de-mod-le-et-performances" class="h2 article-title">Type de modèle et performances</h2>
+<p><span class="tab">&emsp;Le modèle répliqué ici est un ST-MGCN (<i>spatiotemporal multigraph convolution network</i>). Ce modèle a été construit pour prédire la demande en passagers par zone, sur des données de VTC à Beijing et Shanghai (<a href="https://ojs.aaai.org/index.php/AAAI/article/view/4247/">Geng et al 2019</a>). L’avantage de cet algorithme repose sur la prise en compte des corrélations spatiales entre zones par convolution sur différents type de graphes de dépendances spatiales : dépendance géographique, dépendance fonctionnelle, et connectivité par les réseaux de transport. Il prend également en compte l’autocorrélation sur la séquence temporelle par un réseau de neurones récurrent.</span>
+<span class="tab">&emsp;Les nœuds de ces graphes représentent des régions délimitées de l’espace, et les arêtes différents types de dépendance. L’algorithme attribue un module à chacun des graphes utilisés dans le modèle. Ce module permet de prendre en compte les corrélations spatiales et temporelles dans la prédiction de la demande. Pour ce faire, une <strong>couche CG-RNN</strong> (<i>contextual-gated recurrent neural network</i>) incorpore l’information du contexte à la modélisation temporelle, grâce à un mécanisme de contrôle contextuel. Au sein d’un module, l’information sortant de la couche CG-RNN passe ensuite par une <strong>couche de convolution de graphe</strong> d'ordre K. Au terme de la convolution de graphe au sein d’un module, l’information des trois modules est concaténée et agrégée par une <strong>fonction d’agrégation</strong> (somme, moyenne, maximum, etc.), puis passée par une fonction d’activation. Cette information poolée est la prédiction du graphe.</span>
+<img src="assets/image (2).png" alt="alt text" width="70%" height="auto"></p>
+<p><span class="tab"> 
+&emsp;Le modèle entraîné sur les données de Rennes Métropole vise à prédire la fréquentation dans chaque carreau dans l'heure à venir, en fonction de la fréquentation aux heures précédentes. A cette tâche, le modèle ST-MGCN obtient un score <b>RMSE=50.2</b> (à comparer à RMSE=184.5 pour un modèle <i>lightGBM</i>).
+</span></p>
+<h2 id="d-ploiement" class="h2 article-title">Déploiement</h2>
+<p><span class="tab">&emsp;Ce modèle a été exposé de manière serverless sur une AWS Lambda function, initialement accessible <a href="https://46b50yi147.execute-api.eu-west-3.amazonaws.com/Prod/star_predict/">ici</a>. Cette fonction est appelée par un dashboard (sous forme <i>Dash</i>), initialement exposé sur AWS Elastic Beanstalk à <a href="http://star-dashboard.eu-west-3.elasticbeanstalk.com/">cette adresse</a>.</span>
+<span class="tab">&emsp;Ce dashboard permet à la fois de visualiser les données sur lesquelles le modèle a été entraîné, mais également de faire des prédictions de fréquentation sur le jeu de données test. La prédiction peut se faire : soit sans perturbation, soit en supprimant une connexion entre deux carreaux.</p>
+<h2 id="id-es-d-am-lioration" class="h2 article-title">Idées d'amélioration</h2>
+<p><span class="tab">&emsp;En perspectives de ce travail, deux pistes semblent prioritaires :</span></p>
+<ul class="goodlist">
+<li>D’une part, la pondération du graphe de connectivité STAR en fonction de la fréquence des transports et de leur capacité, de sorte à obtenir une mesure plus fine des dépendances spatiales sur cette dimension.</li>
+<li>D’autre part, entraîner le modèle à prédire des séries temporelles plus longues, de sorte à pouvoir prédire l’effet de perturbations à plus long terme.</li>
+</ul>
+
+</body>
