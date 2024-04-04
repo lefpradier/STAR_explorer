@@ -1,0 +1,63 @@
+.Select-control {
+    background-color: #4D4D4D !important;
+    color:white;
+  }
+  
+.Select-menu-outer {
+    background-color: #4D4D4D !important;
+    color: white;
+}
+
+.Select-value-label {
+    color: white !important;
+}
+
+.custom-tabs-container {
+    width: 85%;
+    background-color: #272B30;
+}
+.custom-tabs {
+    border-top-left-radius: 3px;
+    background-color: #272B30;
+    padding: 0px 24px;
+    border-bottom: 1px solid #272B30;
+}
+
+.custom-tab {
+    background-color: #4D4D4D !important;
+    color:#FFDEB3 !important;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-left: 1px solid white !important;
+    border-right: 1px solid white !important;
+    border-top: 1px solid white !important;
+    border-bottom: 1px solid white !important;
+    padding: 12px !important;
+    font-family: "system-ui";
+    font-weight: bold !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+.custom-tab--selected {
+    color: #FFDEB3 !important;
+    background-color: #4D4D4D !important;
+    box-shadow: 3px 3px 0px #AAAAAA !important;
+    border-left: 1px solid white !important;
+    border-right: 1px solid white !important;
+    border-top: 3px solid #FFDEB3 !important;
+    font-weight: bold !important;
+}
+
+.mb-2 {
+    color: white;
+}
+
+.mb-title {
+    color: #FFDEB3;
+}
+
+.label {
+    color: white;
+}
+
